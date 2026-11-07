@@ -1,0 +1,73 @@
+DublaSync — junta a dublagem de um arquivo ao vídeo de alta qualidade de outro
+==============================================================================
+
+INSTALAR (uma vez só)
+  1. Extraia esta pasta em qualquer lugar.
+  2. Dê dois cliques em "instalar.bat" (instala Python, FFmpeg e as bibliotecas pelo winget/pip).
+     Se pedir, feche e rode de novo.
+     Já tinha a versão anterior? Rode o instalar.bat de novo (para o arrastar-e-soltar e a Lixeira).
+
+USAR
+  1. Dois cliques em "Abrir DublaSync.bat". A janela tem três páginas na barra lateral:
+     Novo trabalho, Fila, Histórico (tudo que você já gerou; dois cliques abrem a pasta),
+     Compartilhar (passo a passo para semear o .torrent) e Configurações (ficam salvas).
+  2. Arraste o arquivo DUBLADO para a área 1 (vídeo ou só o áudio: avi, mp4, mkv, rmvb, mp3, ac3, dts...)
+     e o ORIGINAL para a área 2. Também dá para soltar os dois juntos em qualquer lugar da janela:
+     o de maior resolução vira o original. Ou clique na área para procurar.
+  3. Clique em "Gerar dual áudio" e acompanhe cada etapa (porcentagem, tempo e o que foi encontrado).
+  4. Com "retirar os arquivos antigos" marcado, ao final o dublado e o original vão para a Lixeira
+     (dá para recuperar). Isso só acontece depois que o arquivo novo passa na conferência;
+     se der erro ou você cancelar, nada é mexido.
+
+NOME DO ARQUIVO NOVO
+  Gerado automaticamente (e editável) em um de dois padrões:
+  - Torrent/cena: Oppenheimer.2023.1080p.BluRay.DUAL.DTS-HD.MA.5.1.x264-ZQ.mkv
+  - Plex/Radarr (TRaSH Guides): Oppenheimer (2023) [Bluray-1080p][DTS-HD MA 5.1][EN+PT][x264]-ZQ.mkv
+  Resolução, HDR/Dolby Vision, codecs, canais e idiomas são lidos do arquivo de verdade;
+  título, ano, fonte (BluRay, WEB-DL…), serviço (AMZN, NF…), edição e grupo vêm do nome original.
+  O áudio original continua como 1ª faixa (a de melhor qualidade), como manda a boa prática.
+
+O QUE ELE FAZ SOZINHO
+  - Acha o atraso entre as versões.
+  - Corrige diferença de velocidade (ex.: dublagem de DVD/TV PAL 25 fps x Blu-ray 23,976),
+    já devolvendo o tom certo da voz.
+  - Detecta cenas cortadas ou a mais e ajusta cada trecho. Onde a dublagem não tem
+    a cena, entra o áudio original naquele pedaço.
+  - Análise rápida: lê só amostras do original (~13%); se duas amostras vizinhas discordarem
+    (corte de cena), lê aquele trecho inteiro. Se as amostras não bastarem, lê tudo sozinho.
+  - O dublado é decodificado em fatias, uma por núcleo, e as emendas são alinhadas pelo próprio
+    áudio, amostra por amostra. O ajuste de velocidade também roda em paralelo.
+  - Usa música e efeitos sonoros para sincronizar; a faixa de frequência da voz quase
+    não conta, porque os idiomas são diferentes.
+  - O vídeo, os áudios e as legendas originais são copiados sem perda nenhuma.
+
+FORMATO DA DUBLAGEM
+  - Dolby AC3 640k (padrão): rápido e toca direto em TVs/Plex.
+  - FLAC: sem perda nenhuma, arquivo maior.
+  - AAC: compatível, mas a codificação é bem mais lenta.
+
+LINHA DE COMANDO (opcional, para vários filmes em lote)
+  py DublaSync.pyw "dublado.avi" "original.mkv" [-o saida.mkv] [--codec flac] [--original-padrao] [--retirar-antigos] [--nome cena|plex] [--completa]
+
+TORRENT
+  Com "Gerar .torrent" ligado (Configurações → Torrent), o programa cria um .torrent do MKV,
+  com o mesmo nome e na mesma pasta, e mostra o link magnet (botão "Copiar magnet").
+  - Público: usa a lista de trackers (botão "Usar lista pública atualizada" baixa a lista do dia).
+  - Privado: ligue "Torrent privado" e use só o announce do seu tracker (com sua passkey).
+  Para deixar disponível, veja a página "Compartilhar" do programa. Resumo:
+   1. No qui/qBittorrent: Adicionar Torrent → escolha o .torrent.
+   2. Caminho de salvamento = pasta onde o MKV já está, como o servidor enxerga (ex.: /HD 8TB/Filmes).
+   3. Não pule a verificação: ele confere, chega a 100% e fica "Semeando".
+   4. Porta de entrada aberta (UPnP ou redirecionamento no roteador) e DHT/PeX ligados.
+   5. Não renomeie nem edite o MKV depois.
+
+FILA (vários filmes enquanto você faz outra coisa)
+  - No Novo trabalho: escolha o par e clique "Adicionar à fila" (vai para o fim) ou
+    "Gerar agora" (vai para o começo e já começa). Enquanto um processa, você prepara os próximos.
+  - Vários de uma vez: na página Fila, clique "Adicionar vários" (ou arraste os arquivos para a lista)
+    com dublados e originais misturados. O programa forma os pares sozinho pelo título, ano e
+    duração — funciona até com título em português x inglês — e pede confirmação antes.
+  - Subir / Descer / Remover mudam a ordem; "Pausar depois do atual" termina o filme em andamento e para.
+  - "Desligar o PC ao terminar a fila": desliga 2 minutos depois do último (dá para cancelar).
+  - A fila fica salva. Se fechar o programa no meio, o filme interrompido volta para a espera.
+  - Se um filme der erro, a fila segue para o próximo; dois cliques no item mostram o erro.

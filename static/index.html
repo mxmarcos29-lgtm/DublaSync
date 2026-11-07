@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DublaSync</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%23171717'/><text x='16' y='23' font-size='20' text-anchor='middle' fill='%23b7c3d3'>♪</text></svg>">
+<style>
+:root{
+  --bg:#171717; --side:#141414; --card:#1c1c1c; --card2:#232323; --hover:#262626;
+  --line:#2a2a2a; --line2:#363636; --text:#e5e5e5; --dim:#8f8f8f; --dim2:#5f5f5f;
+  --sel:#b7c3d3; --sel-text:#111418; --sel-hover:#c8d2df; --track:#333; --bar:#d4d4d4;
+  --ok:#22c55e; --ok-bg:#15291c; --ok-fg:#4ade80; --err:#ef4444; --err-bg:#2d1515; --err-fg:#f87171;
+  --warn:#f5b94a; --badge:#2b2b2b; --r:10px; --rs:8px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--text);
+  font:14px/1.45 Inter,"Segoe UI",system-ui,-apple-system,Roboto,sans-serif}
+button,input,select,textarea{font:inherit;color:inherit}
+a{color:var(--sel)}
+.app{display:grid;grid-template-columns:230px 1fr;grid-template-rows:1fr 30px;height:100vh}
+aside{grid-row:1;background:var(--side);border-right:1px solid var(--line);display:flex;flex-direction:column;padding:16px 10px}
+.logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:18px;padding:4px 8px 18px}
+.logo span{color:var(--sel)}
+.nav{display:flex;align-items:center;gap:12px;padding:9px 12px;border-radius:var(--rs);cursor:pointer;font-weight:600;user-select:none}
+.nav:hover{background:var(--hover)}
+.nav.on{background:var(--sel);color:var(--sel-text)}
+.nav .ic{width:18px;text-align:center;color:var(--dim)}
+.nav.on .ic{color:var(--sel-text)}
+.nav .cnt{margin-left:auto;background:var(--badge);border-radius:999px;padding:0 8px;font-size:11px;font-weight:700}
+.nav.on .cnt{background:var(--sel-text);color:var(--sel)}
+.sep{height:1px;background:var(--line);margin:16px 4px 12px}
+.sec{font-size:11px;font-weight:700;color:var(--dim);padding:0 8px 6px;letter-spacing:.04em}
+.tool{display:flex;align-items:center;padding:6px 8px;font-size:13px}
+.tool small{margin-left:auto;color:var(--dim);margin-right:8px;font-size:11px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--dim2)}
+.ver{margin-top:auto;color:var(--dim2);font-size:11px;padding:12px 8px 0;border-top:1px solid var(--line)}
+main{grid-row:1;overflow:auto;padding:22px 26px}
+footer{grid-column:1/3;background:var(--side);border-top:1px solid var(--line);display:flex;align-items:center;gap:8px;padding:0 14px;font-size:12px}
+footer .r{margin-left:auto;color:var(--dim)}
+.page{display:none;max-width:1250px}
+.page.on{display:block}
+.head{display:flex;align-items:flex-end;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+.head h1{margin:0;font-size:24px}
+.head p{margin:2px 0 0;color:var(--dim)}
+.head .act{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line2);background:var(--card);border-radius:var(--rs);padding:8px 14px;font-weight:600;cursor:pointer;white-space:nowrap}
+.btn:hover{background:var(--hover)}
+.btn.primary{background:var(--sel);color:var(--sel-text);border-color:var(--sel)}
+.btn.primary:hover{background:var(--sel-hover)}
+.btn.danger{background:var(--err-bg);color:var(--err-fg);border-color:var(--err-bg)}
+.btn:disabled{background:var(--card2)!important;color:var(--dim2)!important;border-color:var(--line2)!important;cursor:default}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px}
+.card h3{margin:0 0 2px;font-size:15px}
+.card .sub{color:var(--dim);font-size:12.5px;margin:0 0 12px}
+.grid2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px}
+.grid4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-top:14px}
+.zone{border:2px dashed var(--line2);border-radius:var(--r);background:var(--card);padding:14px 18px;min-height:96px;cursor:pointer;transition:.15s}
+.zone:hover{border-color:var(--sel);background:var(--hover)}
+.zone.set{border-style:solid}
+.zone .t{font-size:11px;font-weight:700;color:var(--dim);letter-spacing:.04em;display:flex}
+.zone .t b{margin-left:auto;color:var(--sel);font-weight:500}
+.zone .n{font-weight:700;margin-top:8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.zone .d{color:var(--dim);font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.zone .e{color:var(--dim);text-align:center;margin-top:14px}
+.stat .top{display:flex;font-weight:600}
+.stat .top i{margin-left:auto;color:var(--dim);font-style:normal}
+.stat .v{font-size:22px;font-weight:700;margin-top:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stat .s{color:var(--dim);font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row{display:grid;grid-template-columns:130px 1fr auto;gap:12px;align-items:center;margin-top:8px}
+.row:first-child{margin-top:0}
+.row label{color:var(--dim);font-size:12.5px}
+.in{width:100%;background:var(--card2);border:1px solid var(--line2);border-radius:var(--rs);padding:8px 10px;outline:none}
+.in:focus{border-color:var(--sel)}
+select.in{appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--dim) 50%),linear-gradient(135deg,var(--dim) 50%,transparent 50%);background-position:calc(100% - 16px) 55%,calc(100% - 11px) 55%;background-size:5px 5px;background-repeat:no-repeat;padding-right:30px}
+.link{color:var(--sel);cursor:pointer;text-decoration:underline;font-size:12.5px;white-space:nowrap}
+.trunc{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bar{height:6px;border-radius:99px;background:var(--track);overflow:hidden}
+.bar>i{display:block;height:100%;background:var(--bar);border-radius:99px;transition:width .4s}
+.bar.ok>i{background:var(--ok)} .bar.err>i{background:var(--err)}
+.badge{display:inline-block;border-radius:99px;padding:2px 9px;font-size:11px;font-weight:700;background:var(--badge);color:var(--dim);white-space:nowrap}
+.badge.run{background:var(--sel);color:var(--sel-text)} .badge.ok{background:var(--ok-bg);color:var(--ok-fg)}
+.badge.err{background:var(--err-bg);color:var(--err-fg)} .badge.wait{color:var(--text)}
+table{width:100%;border-collapse:separate;border-spacing:0}
+th{font-size:12px;color:var(--dim);text-align:left;font-weight:700;padding:8px 10px;border-bottom:1px solid var(--line)}
+td{padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr.cur td{background:var(--hover)} tr.cur td:first-child{border-radius:8px 0 0 8px} tr.cur td:last-child{border-radius:0 8px 8px 0}
+tr.sel td{background:#2a2f37}
+tr.click{cursor:pointer}
+td .nm{font-weight:600} td .sm{font-size:11.5px;color:var(--dim2)}
+.pbar{display:flex;align-items:center;gap:8px;min-width:150px}.pbar .bar{flex:1;max-width:110px}.pbar span{font-size:12px;color:var(--dim);width:42px}
+.steps td:first-child{color:var(--dim2);width:34px}
+.det{color:var(--dim);font-size:12.5px;max-width:420px}
+.toolbar{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center}
+.toggle{display:flex;gap:12px;align-items:flex-start;margin:6px 0 12px;cursor:pointer}
+.sw{flex:none;width:38px;height:22px;border-radius:99px;background:var(--line2);position:relative;transition:.15s;margin-top:1px}
+.sw::after{content:"";position:absolute;width:16px;height:16px;border-radius:50%;background:var(--dim);top:3px;left:3px;transition:.15s}
+.toggle.on .sw{background:var(--sel)} .toggle.on .sw::after{left:19px;background:var(--sel-text)}
+.toggle b{display:block} .toggle small{color:var(--dim);font-size:12.5px}
+.stack>*+*{margin-top:14px}
+.steps-list{counter-reset:s;list-style:none;padding:0;margin:0}
+.steps-list li{counter-increment:s;position:relative;padding:3px 0 7px 34px}
+.steps-list li::before{content:counter(s);position:absolute;left:0;top:2px;width:22px;height:22px;border-radius:50%;background:var(--badge);border:1px solid var(--line2);font-size:11px;font-weight:700;display:grid;place-items:center}
+code{background:var(--card2);border:1px solid var(--line2);border-radius:6px;padding:1px 6px;font-size:12.5px}
+.modal{position:fixed;inset:0;background:#000a;display:none;align-items:center;justify-content:center;z-index:9;padding:20px}
+.modal.on{display:flex}
+.mbox{background:var(--card);border:1px solid var(--line2);border-radius:14px;width:min(860px,100%);max-height:88vh;display:flex;flex-direction:column}
+.mhead{padding:16px 18px 10px;border-bottom:1px solid var(--line)}
+.mhead h3{margin:0 0 8px}
+.crumbs{display:flex;flex-wrap:wrap;gap:4px;font-size:13px;align-items:center}
+.crumbs span{cursor:pointer;color:var(--sel)} .crumbs i{color:var(--dim2);font-style:normal}
+.mlist{overflow:auto;padding:6px 10px;flex:1;min-height:240px}
+.fi{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;cursor:pointer}
+.fi:hover{background:var(--hover)}
+.fi .ic{width:20px;text-align:center;color:var(--dim)}
+.fi .sz{margin-left:auto;color:var(--dim);font-size:12px;white-space:nowrap}
+.fi.chk{background:#2a2f37}
+.mfoot{padding:12px 18px;border-top:1px solid var(--line);display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.mfoot .info{color:var(--dim);font-size:12.5px;margin-right:auto}
+.toast{position:fixed;right:20px;bottom:44px;background:var(--card2);border:1px solid var(--line2);border-radius:10px;padding:10px 14px;max-width:420px;display:none;z-index:10}
+.toast.on{display:block}
+.empty{color:var(--dim);text-align:center;padding:40px 10px}
+textarea.in{min-height:140px;font-size:12.5px;font-family:ui-monospace,Consolas,monospace}
+#p-fila .card,#p-hist .card{overflow-x:auto}
+@media (max-width:900px){
+  .app{grid-template-columns:1fr;grid-template-rows:auto 1fr auto}
+  aside{grid-row:1;flex-direction:row;align-items:center;overflow-x:auto;padding:8px;gap:4px;border-right:none;border-bottom:1px solid var(--line)}
+  main{grid-row:2} footer{grid-row:3;padding:6px 12px} footer .r{display:none}
+  .head .act{margin-left:0}
+  aside .logo,aside .sep,aside .sec,aside .tool,aside .ver{display:none}
+  .nav{white-space:nowrap}
+  main{padding:14px}
+  .grid2,.grid4{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
+  .grid4{margin-top:10px} .stat .v{font-size:18px} .card{padding:12px}
+  .row{grid-template-columns:96px minmax(0,1fr) auto}
+  .hide-m{display:none}
+  footer{grid-column:1}
+}
+</style>
+</head>
+<body>
+<div class="app">
+<aside>
+  <div class="logo"><span>♪</span> DublaSync</div>
+  <div class="nav" data-p="novo"><span class="ic">⌂</span>Novo trabalho</div>
+  <div class="nav" data-p="fila"><span class="ic">≡</span>Fila<span class="cnt" id="qcount" style="display:none"></span></div>
+  <div class="nav" data-p="hist"><span class="ic">↺</span>Histórico</div>
+  <div class="nav" data-p="share"><span class="ic">⇪</span>Compartilhar</div>
+  <div class="nav" data-p="cfg"><span class="ic">⚙</span>Configurações</div>
+  <div class="sep"></div>
+  <div class="sec">SERVIDOR</div>
+  <div class="tool">FFmpeg<small id="t-ff"></small><span class="dot" id="d-ff"></span></div>
+  <div class="tool">Processador<small id="t-cpu"></small><span class="dot" style="background:var(--ok)"></span></div>
+  <div class="tool">qBittorrent<small id="t-qb"></small><span class="dot" id="d-qb"></span></div>
+  <div class="ver" id="ver"></div>
+</aside>
+
+<main>
+<!-- NOVO TRABALHO -->
+<section class="page" id="p-novo">
+  <div class="head"><div><h1>Novo trabalho</h1><p>Dublagem + vídeo em alta → MKV dual áudio, processado no próprio servidor</p></div>
+    <div class="act">
+      <button class="btn" id="b-magnet" style="display:none">⛓ Copiar magnet</button>
+      <a class="btn" id="b-tor" style="display:none;text-decoration:none;color:inherit">⤓ Baixar .torrent</a>
+      <button class="btn danger" id="b-cancel" style="display:none">■ Cancelar atual</button>
+      <button class="btn" id="b-queue">＋ Adicionar à fila</button>
+      <button class="btn primary" id="b-go">▶ Gerar agora</button>
+    </div></div>
+  <div class="grid2">
+    <div class="zone" id="z-dub" data-k="dub"></div>
+    <div class="zone" id="z-orig" data-k="orig"></div>
+  </div>
+  <div class="grid4">
+    <div class="card stat"><div class="top">Original<i>▣</i></div><div class="v" id="s-orig">—</div><div class="s" id="s-orig2"></div></div>
+    <div class="card stat"><div class="top">Dublagem<i>♪</i></div><div class="v" id="s-dub">—</div><div class="s" id="s-dub2"></div></div>
+    <div class="card stat"><div class="top">Sincronia<i>⇄</i></div><div class="v" id="s-sync">—</div><div class="s" id="s-sync2"></div></div>
+    <div class="card stat"><div class="top">Arquivo novo<i>▤</i></div><div class="v" id="s-out">—</div><div class="s" id="s-out2"></div></div>
+  </div>
+  <div class="card" style="margin-top:14px">
+    <div class="row"><label>Nome do arquivo</label><input class="in" id="f-name" placeholder="escolha o original para sugerir o nome"><span></span></div>
+    <div class="row"><label>Pasta</label><div class="trunc" id="f-folder">mesma pasta do original</div><span class="link" id="f-folder-ch">alterar</span></div>
+    <div class="row"><label>Opções</label><div class="trunc" id="f-summary"></div><span class="link" data-go="cfg">configurações</span></div>
+  </div>
+  <div class="card" style="margin-top:14px">
+    <div style="display:flex;align-items:center;margin-bottom:8px"><h3 id="steps-title">Etapas</h3><span style="margin-left:auto;color:var(--dim);font-size:12.5px" id="total"></span></div>
+    <div class="bar" id="allbar" style="margin-bottom:6px"><i style="width:0"></i></div>
+    <table class="steps"><thead><tr><th>#</th><th>Etapa</th><th>Progresso</th><th>Status</th><th class="hide-m">Tempo</th><th class="hide-m">Detalhes</th></tr></thead><tbody id="steps"></tbody></table>
+  </div>
+</section>
+
+<!-- FILA -->
+<section class="page" id="p-fila">
+  <div class="head"><div><h1>Fila</h1><p>Coloque vários filmes e deixe processando — pode fechar a página, o servidor continua</p></div>
+    <div class="act"><button class="btn" id="b-many">＋ Adicionar vários</button>
+      <button class="btn" id="b-qpause">‖ Pausar depois do atual</button><button class="btn primary" id="b-qstart">▶ Iniciar fila</button></div></div>
+  <div class="toolbar">
+    <button class="btn" data-qa="move" data-d="-1">↑ Subir</button><button class="btn" data-qa="move" data-d="1">↓ Descer</button>
+    <button class="btn" data-qa="remove">✕ Remover</button><button class="btn" data-qa="retry">↻ Tentar de novo</button>
+    <button class="btn" data-qa="clear_done">Limpar concluídos</button>
+    <span style="margin-left:auto;color:var(--dim);font-size:12.5px" id="qsum"></span>
+  </div>
+  <div class="card" style="padding:6px 8px"><table><thead><tr><th>#</th><th>Filme</th><th>Status</th><th>Progresso</th><th class="hide-m">Detalhes</th><th class="hide-m">Tempo</th></tr></thead><tbody id="queue"></tbody></table>
+    <div class="empty" id="qempty">A fila está vazia.<br>Use “Adicionar à fila” no Novo trabalho ou “Adicionar vários” aqui.</div></div>
+</section>
+
+<!-- HISTÓRICO -->
+<section class="page" id="p-hist">
+  <div class="head"><div><h1>Histórico</h1><p>Tudo que já foi gerado no servidor</p></div>
+    <div class="act"><a class="btn" href="/api/log" target="_blank" style="text-decoration:none;color:inherit">Registro técnico</a><button class="btn" id="b-hclear">✕ Limpar histórico</button></div></div>
+  <div class="card" style="padding:6px 8px"><table><thead><tr><th>Arquivo</th><th class="hide-m">Tamanho</th><th>Status</th><th class="hide-m">Sincronia</th><th class="hide-m">Tempo</th><th>Data</th><th></th></tr></thead><tbody id="hist"></tbody></table>
+    <div class="empty" id="hempty">Nenhum trabalho ainda.</div></div>
+</section>
+
+<!-- COMPARTILHAR -->
+<section class="page" id="p-share">
+  <div class="head"><div><h1>Compartilhar</h1><p>Como deixar o arquivo novo disponível por torrent</p></div></div>
+  <div class="stack">
+    <div class="card"><h3>Último .torrent gerado</h3><p class="sub" id="sh-name">Nenhum ainda.</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" id="sh-mag">⛓ Copiar link magnet</button><a class="btn" id="sh-dl" style="text-decoration:none;color:inherit">⤓ Baixar .torrent</a></div></div>
+    <div class="card"><h3>Automático: direto para o qBittorrent</h3><p class="sub">Como o DublaSync roda no mesmo servidor do qBittorrent, ele pode adicionar o torrent sozinho no fim de cada filme.</p>
+      <ol class="steps-list"><li>Em <b>Configurações → qBittorrent</b>, ligue “Enviar ao qBittorrent”, preencha endereço, usuário e senha e clique <b>Testar conexão</b>.</li>
+      <li>Confira a <b>tradução de pastas</b>: o mesmo disco aparece com nomes diferentes para cada app (ex.: <code>/media/HD 8TB</code> aqui e <code>/HD 8TB</code> no qBittorrent).</li>
+      <li>Pronto: cada filme concluído aparece no qui/qBittorrent, confere o arquivo e fica “Semeando”.</li></ol></div>
+    <div class="card"><h3>Manual (pelo qui)</h3><ol class="steps-list">
+      <li>Baixe o .torrent (botão acima) e, no qui, clique “Adicionar Torrent”.</li>
+      <li>Em “Caminho de salvamento”, coloque a pasta onde o MKV está, do jeito que o qBittorrent enxerga (ex.: <code>/HD 8TB/Filmes</code>).</li>
+      <li>Não marque “Pular verificação”: ele confere, chega a 100% e fica “Semeando”. Se começar a baixar do zero, o caminho está errado.</li>
+      <li>Não renomeie nem edite o MKV depois — isso quebra o torrent.</li></ol></div>
+    <div class="card"><h3>Para os outros conseguirem baixar de você</h3><ol class="steps-list">
+      <li>Mande o .torrent ou o link magnet.</li>
+      <li>No qBittorrent: Configurações → Conexão → ative UPnP/NAT-PMP, ou abra a porta de entrada no roteador para o IP do servidor.</li>
+      <li>Para torrents públicos, deixe DHT, PeX e Descoberta local ligados (Configurações → BitTorrent).</li>
+      <li>Tracker privado: ligue “Torrent privado”, use só o announce do seu perfil no site, envie pelo Upload do site e adicione no qBittorrent o .torrent que o site devolve.</li></ol>
+      <p class="sub" style="margin:10px 0 0">Compartilhe só conteúdo que você tem direito de distribuir e siga as regras de cada tracker.</p></div>
+  </div>
+</section>
+
+<!-- CONFIGURAÇÕES -->
+<section class="page" id="p-cfg">
+  <div class="head"><div><h1>Configurações</h1><p>Padrões dos próximos trabalhos — salvos automaticamente</p></div></div>
+  <div class="stack" id="cfgbox">
+    <div class="card"><h3>Dublagem</h3><p class="sub">Idioma e formato da faixa dublada</p>
+      <div class="row"><label>Idioma</label><select class="in" data-c="lang" id="c-lang"></select><span></span></div>
+      <div class="row"><label>Formato</label><select class="in" data-c="codec" id="c-codec"></select><span></span></div>
+      <div style="margin-top:12px" class="toggle" data-t="dub_default"><div class="sw"></div><div><b>Dublagem como faixa padrão</b><small>O player abre já na dublagem. O áudio original continua sendo a 1ª faixa.</small></div></div></div>
+    <div class="card"><h3>Velocidade</h3><p class="sub">Como o servidor analisa os arquivos</p>
+      <div class="toggle" data-t="fast"><div class="sw"></div><div><b>Análise rápida por amostragem</b><small>Lê só ~13% do original; se perceber um corte de cena, lê aquele trecho inteiro. Se as amostras não bastarem, lê tudo sozinho.</small></div></div></div>
+    <div class="card"><h3>Nome e pasta</h3><p class="sub">Como e onde o arquivo novo é salvo</p>
+      <div class="row"><label>Padrão do nome</label><select class="in" data-c="style" id="c-style"></select><span></span></div>
+      <div class="row"><label>Pasta padrão</label><div class="trunc" id="c-folder">mesma pasta do original</div><span><span class="link" id="c-folder-ch">escolher</span> · <span class="link" id="c-folder-clr">limpar</span></span></div></div>
+    <div class="card"><h3>Torrent</h3><p class="sub">Um .torrent do arquivo novo, salvo ao lado dele</p>
+      <div class="toggle" data-t="torrent"><div class="sw"></div><div><b>Gerar .torrent junto com o vídeo</b><small>Calcula os pedaços do MKV e cria o .torrent com o mesmo nome.</small></div></div>
+      <div class="toggle" data-t="private"><div class="sw"></div><div><b>Torrent privado</b><small>Para trackers privados: desliga DHT/PeX e usa só o tracker informado.</small></div></div>
+      <label style="color:var(--dim);font-size:12.5px">Trackers (um por linha)</label>
+      <textarea class="in" id="c-trackers" spellcheck="false"></textarea>
+      <div style="display:flex;gap:8px;margin-top:8px;align-items:center;flex-wrap:wrap"><button class="btn" id="b-trk">↻ Usar lista pública atualizada</button><span id="trk-msg" style="color:var(--dim);font-size:12.5px"></span></div>
+      <div class="row" style="margin-top:12px"><label>Origem (source)</label><input class="in" data-c="source" placeholder="opcional — alguns trackers privados pedem"><span></span></div></div>
+    <div class="card"><h3>qBittorrent</h3><p class="sub">Adiciona cada .torrent gerado direto no qBittorrent deste servidor</p>
+      <div class="toggle" data-t="qb_enabled"><div class="sw"></div><div><b>Enviar ao qBittorrent</b><small>Depois de gerar o .torrent, adiciona no qBittorrent já apontando para a pasta do MKV.</small></div></div>
+      <div class="row"><label>Endereço</label><input class="in" data-c="qb_url" placeholder="http://192.168.0.14:8181"><span></span></div>
+      <div class="row"><label>Usuário</label><input class="in" data-c="qb_user"><span></span></div>
+      <div class="row"><label>Senha</label><input class="in" type="password" data-c="qb_pass"><span></span></div>
+      <div class="row"><label>Pasta aqui</label><input class="in" data-c="qb_from" placeholder="/media/HD 8TB"><span></span></div>
+      <div class="row"><label>Mesma pasta no qBittorrent</label><input class="in" data-c="qb_to" placeholder="/HD 8TB"><span></span></div>
+      <div class="row"><label>Categoria</label><input class="in" data-c="qb_category" placeholder="opcional"><span></span></div>
+      <div class="toggle" data-t="qb_skip_check" style="margin-top:12px"><div class="sw"></div><div><b>Pular verificação</b><small>Mais rápido (não relê o filme), mas só ligue depois de confirmar que a tradução de pastas está certa.</small></div></div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><button class="btn" id="b-qbtest">Testar conexão</button><span id="qb-msg" style="font-size:12.5px;color:var(--dim)"></span></div></div>
+    <div class="card"><h3>Depois de terminar</h3><p class="sub">O que fazer com os arquivos usados</p>
+      <div class="toggle" data-t="remove_old"><div class="sw"></div><div><b>Retirar os arquivos antigos</b><small>Move o dublado e o original para a pasta “_antigos (DublaSync)” ao lado deles. <b style="color:var(--warn);display:inline">Atenção:</b> se o original estiver semeando no qBittorrent, o torrent dele vai dar “arquivo ausente”.</small></div></div></div>
+  </div>
+</section>
+</main>
+<footer><span class="dot" id="sb-dot" style="background:var(--ok)"></span><span id="sb">Conectando…</span><span class="r" id="sb-r"></span></footer>
+</div>
+
+<!-- navegador de arquivos do servidor -->
+<div class="modal" id="modal"><div class="mbox">
+  <div class="mhead"><h3 id="m-title">Escolher arquivo</h3><div class="crumbs" id="m-crumbs"></div>
+    <input class="in" id="m-filter" placeholder="filtrar pelo nome…" style="margin-top:10px"></div>
+  <div class="mlist" id="m-list"></div>
+  <div class="mfoot"><span class="info" id="m-info"></span><button class="btn" id="m-cancel">Cancelar</button><button class="btn primary" id="m-ok" style="display:none"></button></div>
+</div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+let S=null, page="novo", prep={dub:null,orig:null}, probe={}, autoName="", nameEdited=false, folder="", qsel=null, lastQ=0;
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const base=p=>String(p||"").split("/").pop();
+const dir=p=>{const s=String(p||"");return s.slice(0,s.lastIndexOf("/"))||"/"};
+const secs=s=>{s=Math.round(s||0);return s>=3600?`${Math.floor(s/3600)}h${String(Math.floor(s%3600/60)).padStart(2,"0")}m`:s>=60?`${Math.floor(s/60)}:${String(s%60).padStart(2,"0")}`:`${s}s`};
+const size=b=>{b=+b||0;const u=["B","KiB","MiB","GiB","TiB"];let i=0;while(b>=1024&&i<4){b/=1024;i++}return (i>=3?b.toFixed(2):Math.round(b))+" "+u[i]};
+const pct=f=>f>=.995||!f?Math.round((f||0)*100)+"%":(f*100).toFixed(1)+"%";
+function toast(msg,ms=3500){const t=$("#toast");t.innerHTML=msg;t.classList.add("on");clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove("on"),ms)}
+async function api(path,body){
+  const r=await fetch(path,body===undefined?{}:{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
+  const j=await r.json().catch(()=>({}));
+  if(!r.ok){const e=new Error(j.error||("erro "+r.status));e.status=r.status;e.data=j;throw e}
+  return j
+}
+function copy(text){
+  if(navigator.clipboard&&window.isSecureContext){navigator.clipboard.writeText(text);return}
+  const t=document.createElement("textarea");t.value=text;document.body.appendChild(t);t.select();document.execCommand("copy");t.remove()
+}
+function show(p){page=p;$$(".page").forEach(e=>e.classList.toggle("on",e.id==="p-"+p));$$(".nav").forEach(e=>e.classList.toggle("on",e.dataset.p===p));render()}
+$$(".nav").forEach(e=>e.onclick=()=>show(e.dataset.p));
+$$("[data-go]").forEach(e=>e.onclick=()=>show(e.dataset.go));
+
+/* ---------- preparação ---------- */
+function drawZones(){
+  for(const k of ["dub","orig"]){
+    const z=$("#z-"+k), p=prep[k], t=k==="dub"?"ARQUIVO DUBLADO":"ORIGINAL EM ALTA QUALIDADE";
+    z.classList.toggle("set",!!p);
+    z.innerHTML=p?`<div class="t">${t}<b>trocar</b></div><div class="n">✔ ${esc(base(p))}</div><div class="d">${esc(probe[k]?.desc||"lendo informações…")}</div>`
+                 :`<div class="t">${t}</div><div class="e">⤓<br>Clique para escolher no servidor${k==="dub"?" (vídeo ou só o áudio)":""}</div>`;
+  }
+  const ready=prep.dub&&prep.orig;
+  $("#b-go").disabled=!ready; $("#b-queue").disabled=!ready;
+}
+async function setFile(k,p){
+  prep[k]=p;probe[k]=null;
+  if(k==="orig"){nameEdited=false;autoName="";$("#f-name").value="";if(!S?.cfg.folder){folder="";}}
+  drawZones();
+  try{const r=await api("/api/probe",{path:p});probe[k]=r;
+    if(k==="orig"){$("#s-orig").textContent=r.card_orig.value;$("#s-orig2").textContent=r.card_orig.sub;
+      if(!nameEdited){autoName=r.suggest;$("#f-name").value=r.suggest}}
+    else if(r.card_dub){$("#s-dub").textContent=r.card_dub.value;$("#s-dub2").textContent=r.card_dub.sub}
+  }catch(e){probe[k]={desc:"⚠ "+e.message}}
+  drawZones();drawFolder();
+}
+function drawFolder(){$("#f-folder").textContent=folder||S?.cfg.folder||(prep.orig?dir(prep.orig)+"  (mesma do original)":"mesma pasta do original")}
+$("#f-name").oninput=()=>{nameEdited=$("#f-name").value.trim()!==autoName};
+$$(".zone").forEach(z=>z.onclick=()=>browse({mode:"file",title:z.dataset.k==="dub"?"Escolher o arquivo dublado":"Escolher o original",start:prep[z.dataset.k]?dir(prep[z.dataset.k]):(prep.orig?dir(prep.orig):prep.dub?dir(prep.dub):""),pick:p=>setFile(z.dataset.k,p)}));
+$("#f-folder-ch").onclick=()=>browse({mode:"folder",title:"Pasta do arquivo novo",start:folder||(prep.orig?dir(prep.orig):""),pick:p=>{folder=p;drawFolder()}});
+async function enqueue(front,start,overwrite=false){
+  try{
+    const r=await api("/api/enqueue",{dub:prep.dub,orig:prep.orig,name:$("#f-name").value.trim(),folder,front,start,overwrite});
+    toast(`Na fila: <b>${esc(base(r.job.out))}</b>`);
+    prep={dub:null,orig:null};probe={};$("#f-name").value="";autoName="";nameEdited=false;folder="";
+    ["orig","dub"].forEach(k=>{$("#s-"+k).textContent="—";$("#s-"+k+"2").textContent=""});
+    drawZones();drawFolder();refresh();
+  }catch(e){
+    if(e.status===409&&confirm(`Já existe:\n${e.data.out}\n\nSubstituir?`))return enqueue(front,start,true);
+    if(e.status!==409)alert(e.message)
+  }
+}
+$("#b-go").onclick=()=>enqueue(true,true);
+$("#b-queue").onclick=()=>enqueue(false,false);
+$("#b-cancel").onclick=()=>{if(confirm("Cancelar o filme atual? Os arquivos originais não são alterados.\nA fila fica pausada."))api("/api/queue",{action:"cancel"}).then(refresh)};
+$("#b-magnet").onclick=()=>{if(S?.last?.magnet){copy(S.last.magnet);toast("Link magnet copiado")}};
+$("#sh-mag").onclick=()=>{const t=lastTor();if(t?.magnet){copy(t.magnet);toast("Link magnet copiado")}};
+
+/* ---------- fila ---------- */
+$("#b-qstart").onclick=()=>api("/api/queue",{action:"start"}).then(refresh);
+$("#b-qpause").onclick=()=>api("/api/queue",{action:"pause"}).then(()=>{toast("A fila vai pausar depois do filme atual");refresh()});
+$$("[data-qa]").forEach(b=>b.onclick=()=>{const a=b.dataset.qa;if(a!=="clear_done"&&!qsel)return toast("Clique num filme da lista primeiro");
+  api("/api/queue",{action:a,id:qsel,dir:+(b.dataset.d||0)}).then(refresh)});
+$("#b-many").onclick=()=>browse({mode:"multi",title:"Adicionar vários — marque dublados e originais (misturados)",start:"",pick:async paths=>{
+  toast("Lendo os arquivos para formar os pares…",8000);
+  try{const r=await api("/api/pair",{paths});
+    if(!r.pairs.length)return alert("Não consegui formar nenhum par com esses arquivos.\nAdicione um de cada vez pelo Novo trabalho.");
+    let msg=`Formei ${r.pairs.length} par(es) (dublado → original):\n\n`+r.pairs.slice(0,15).map(p=>`• ${base(p.dub)}\n     → ${base(p.orig)}`).join("\n");
+    if(r.pairs.length>15)msg+=`\n… e mais ${r.pairs.length-15}`;
+    if(r.rest.length)msg+=`\n\nSem par (ficaram de fora):\n`+r.rest.slice(0,8).map(x=>"• "+base(x)).join("\n");
+    if(!confirm(msg+"\n\nColocar na fila?"))return;
+    const start=!S.current&&confirm("Começar a processar agora?");
+    const a=await api("/api/enqueue_many",{pairs:r.pairs,start});
+    toast(`${a.added} filme(s) adicionados à fila`+(a.skipped.length?`<br><small>${a.skipped.map(esc).join("<br>")}</small>`:""),6000);refresh();show("fila")
+  }catch(e){alert(e.message)}
+}});
+$("#b-hclear").onclick=()=>{if(confirm("Limpar o histórico? (os arquivos não são apagados)"))api("/api/history/clear",{}).then(refresh)};
+
+/* ---------- configurações ---------- */
+let cfgTimer=null,cfgPending={};
+function saveCfg(part){clearTimeout(cfgTimer);Object.assign(S.cfg,part);Object.assign(cfgPending,part);
+  cfgTimer=setTimeout(()=>{const p=cfgPending;cfgPending={};api("/api/settings",p).then(refresh)},300)}
+window.addEventListener("beforeunload",()=>{if(Object.keys(cfgPending).length)navigator.sendBeacon("/api/settings",new Blob([JSON.stringify(cfgPending)],{type:"application/json"}))});
+$$("[data-t]").forEach(t=>t.onclick=()=>{const k=t.dataset.t;S.cfg[k]=!S.cfg[k];t.classList.toggle("on",S.cfg[k]);api("/api/settings",{[k]:S.cfg[k]}).then(refresh)});
+$$("[data-c]").forEach(e=>e.addEventListener(e.tagName==="SELECT"?"change":"input",()=>{
+  let v=e.value;if(e.dataset.c==="codec")v=Object.entries(S.codecs).find(([k,d])=>d===v)[0];if(e.dataset.c==="style")v=Object.entries(S.styles).find(([k,d])=>d===v)[0];
+  saveCfg({[e.dataset.c]:v});
+  if(["lang","style"].includes(e.dataset.c)&&prep.orig){nameEdited=false;setTimeout(()=>setFile("orig",prep.orig),500)}
+}));
+$("#c-trackers").addEventListener("input",()=>saveCfg({trackers:$("#c-trackers").value.split("\n").map(s=>s.trim()).filter(Boolean)}));
+$("#b-trk").onclick=async()=>{$("#trk-msg").textContent="baixando…";try{const r=await api("/api/trackers/refresh",{});$("#c-trackers").value=r.trackers.join("\n");$("#trk-msg").textContent=r.trackers.length+" trackers atualizados";refresh()}catch(e){$("#trk-msg").textContent="não consegui baixar: "+e.message}};
+$("#b-qbtest").onclick=async()=>{const m=$("#qb-msg");m.style.color="var(--dim)";m.textContent="testando…";
+  clearTimeout(cfgTimer);if(Object.keys(cfgPending).length){const p=cfgPending;cfgPending={};await api("/api/settings",p)}
+  const v=k=>$(`[data-c=${k}]`).value;
+  try{const r=await api("/api/qb/test",{qb_url:v("qb_url"),qb_user:v("qb_user"),qb_pass:v("qb_pass")});m.style.color="var(--ok-fg)";m.textContent="✔ conectado — qBittorrent "+r.version}
+  catch(e){m.style.color="var(--err-fg)";m.textContent="✖ "+e.message}};
+$("#c-folder-ch").onclick=()=>browse({mode:"folder",title:"Pasta padrão para os arquivos novos",start:S.cfg.folder||"",pick:p=>api("/api/settings",{folder:p}).then(refresh)});
+$("#c-folder-clr").onclick=()=>api("/api/settings",{folder:""}).then(refresh);
+let cfgFilled=false;
+function fillCfg(){
+  const c=S.cfg;
+  const opt=(sel,list,cur)=>{$(sel).innerHTML=list.map(x=>`<option${x===cur?" selected":""}>${esc(x)}</option>`).join("")};
+  opt("#c-lang",S.langs,c.lang);opt("#c-codec",Object.values(S.codecs),S.codecs[c.codec]);opt("#c-style",Object.values(S.styles),S.styles[c.style]);
+  $$("[data-c]").forEach(e=>{if(e.tagName!=="SELECT"&&document.activeElement!==e)e.value=c[e.dataset.c]??""});
+  if(document.activeElement!==$("#c-trackers"))$("#c-trackers").value=(c.trackers||[]).join("\n");
+  cfgFilled=true
+}
+
+/* ---------- navegador de arquivos ---------- */
+let M=null;
+function browse(o){M={...o,checked:new Set(),data:null};$("#m-title").textContent=o.title;$("#m-filter").value="";$("#modal").classList.add("on");
+  const ok=$("#m-ok");ok.style.display=o.mode==="file"?"none":"";ok.textContent=o.mode==="folder"?"Usar esta pasta":"Formar pares";go(o.start||"")}
+async function go(p){try{M.data=await api("/api/browse?path="+encodeURIComponent(p));drawModal()}catch(e){if(p)go("");else toast(e.message)}}
+function drawModal(){
+  const d=M.data,f=$("#m-filter").value.toLowerCase();
+  const parts=d.path?d.path.split("/").filter(Boolean):[];
+  let acc="";$("#m-crumbs").innerHTML=`<span data-p="">Discos</span>`+parts.map(x=>{acc+="/"+x;return `<i>›</i><span data-p="${esc(acc)}">${esc(x)}</span>`}).join("");
+  $$("#m-crumbs span").forEach(s=>s.onclick=()=>go(s.dataset.p));
+  let h="";if(d.path)h+=`<div class="fi" data-dir="${esc(d.parent)}"><span class="ic">↰</span>..</div>`;
+  for(const x of d.dirs)if(!f||x.name.toLowerCase().includes(f))h+=`<div class="fi" data-dir="${esc(x.path)}"><span class="ic">▸</span>${esc(x.name)}</div>`;
+  if(M.mode!=="folder")for(const x of d.files)if(!f||x.name.toLowerCase().includes(f))h+=`<div class="fi${M.checked.has(x.path)?" chk":""}" data-file="${esc(x.path)}"><span class="ic">${M.mode==="multi"?(M.checked.has(x.path)?"☑":"☐"):"▶"}</span><span class="trunc">${esc(x.name)}</span><span class="sz">${size(x.size)}</span></div>`;
+  if(!h)h=`<div class="empty">Nenhum vídeo ou áudio nesta pasta.</div>`;
+  $("#m-list").innerHTML=h;
+  $$("#m-list [data-dir]").forEach(e=>e.onclick=()=>go(e.dataset.dir));
+  $$("#m-list [data-file]").forEach(e=>e.onclick=()=>{const p=e.dataset.file;
+    if(M.mode==="file"){closeM();M.pick(p)}else{M.checked.has(p)?M.checked.delete(p):M.checked.add(p);drawModal()}});
+  $("#m-info").textContent=M.mode==="multi"?`${M.checked.size} arquivo(s) marcado(s) — pode trocar de pasta e continuar marcando`:M.mode==="folder"?(d.path||"escolha um disco"):"";
+  $("#m-ok").disabled=M.mode==="folder"?!d.path:M.checked.size<2;
+}
+function closeM(){$("#modal").classList.remove("on")}
+$("#m-filter").oninput=()=>M&&drawModal();
+$("#m-cancel").onclick=closeM;
+$("#modal").onclick=e=>{if(e.target.id==="modal")closeM()};
+$("#m-ok").onclick=()=>{const m=M;closeM();m.pick(m.mode==="folder"?m.data.path:[...m.checked])};
+
+/* ---------- desenho ---------- */
+const LBL={wait:["Na fila","wait"],run:["Processando","run"],ok:["Concluído","ok"],err:["Erro","err"],cancel:["Cancelado",""]};
+const SPIN="◐◓◑◒";let spin=0;
+function lastTor(){if(S.last?.torrent)return S.last;return S.history.find(h=>h.torrent)}
+function render(){
+  if(!S)return;
+  const c=S.cfg,now=Date.now()/1000+(S._skew||0),cur=S.queue.find(j=>j.id===S.current);
+  spin=(spin+1)%4;
+  // lateral
+  $("#t-ff").textContent=S.tools.ffmpeg?"v"+S.tools.ffmpeg:"não encontrado";$("#d-ff").style.background=S.tools.ffmpeg?"var(--ok)":"var(--err)";
+  $("#t-cpu").textContent=S.tools.threads+" núcleos";
+  $("#t-qb").textContent=c.qb_enabled?"ligado":"desligado";$("#d-qb").style.background=c.qb_enabled?"var(--ok)":"var(--dim2)";
+  $("#ver").innerHTML=`Versão ${esc(S.version)}`+(S.tools.git?`<br>atualizado: ${esc(S.tools.git)}`:"")+`<br>resampler ${S.tools.soxr?"soxr":"padrão"}`;
+  const nw=S.queue.filter(j=>j.status==="wait").length+(cur?1:0);
+  $("#qcount").style.display=nw?"":"none";$("#qcount").textContent=nw;
+  // rodapé
+  if(cur){$("#sb").textContent=(cur.detail||"Processando…");$("#sb-dot").style.background="var(--sel)"}
+  else if(S.paused&&S.queue.some(j=>j.status==="wait")){$("#sb").textContent="Fila pausada — "+S.queue.filter(j=>j.status==="wait").length+" esperando";$("#sb-dot").style.background="var(--warn)"}
+  else{$("#sb").textContent=S.last?"Pronto — "+base(S.last.out):"Pronto";$("#sb-dot").style.background="var(--ok)"}
+  $("#sb-r").textContent=`${S.tools.threads} núcleos · FFmpeg ${S.tools.ffmpeg||"—"} · retirar antigos: ${c.remove_old?"ligado":"desligado"}`;
+  // novo
+  $("#b-cancel").style.display=cur?"":"none";
+  $("#b-go").textContent=cur?"▶ Próximo da fila":"▶ Gerar agora";
+  const lt=S.last;$("#b-magnet").style.display=!cur&&lt?.magnet?"":"none";
+  $("#b-tor").style.display=!cur&&lt?.torrent?"":"none";if(lt?.torrent)$("#b-tor").href="/api/torrent?path="+encodeURIComponent(lt.torrent);
+  $("#f-summary").textContent=[c.lang,S.codecs[c.codec].split("(")[0].trim(),c.style==="cena"?"padrão torrent":"padrão Plex/Radarr",
+    c.torrent?(".torrent "+(c.private?"privado":"público")+(c.qb_enabled?" → qBittorrent":"")):"sem .torrent",c.fast?"análise rápida":"análise completa",c.remove_old?"retira antigos":"mantém os antigos"].join("  ·  ");
+  if(!folder)drawFolder();
+  const st=S.stages||{},W={ler:1,orig:10,dub:12,sync:6,ajuste:12,gerar:45,conferir:2,torrent:10,limpar:2};
+  $("#steps-title").textContent=cur?"Em andamento: "+base(cur.out):(S.started?"Último trabalho":"Etapas");
+  let h="";S.stage_names.forEach(([k,lab],i)=>{const s=st[k]||{},sts=s.status;const f=sts==="ok"?1:(s.frac||0);
+    const [bl,bc]=sts==="run"?[SPIN[spin]+" Executando","run"]:sts==="ok"?["Concluído","ok"]:sts==="err"?["Erro","err"]:sts==="skip"?["Pulado",""]:["Aguardando",""];
+    const t=s.t0?secs((s.t1||now)-s.t0):"—";
+    h+=`<tr class="${sts==="run"?"cur":""}"><td>${String(i+1).padStart(2,"0")}</td><td style="${sts?"":"color:var(--dim)"};font-weight:${sts==="run"?700:400}">${lab}</td>
+      <td><div class="pbar"><div class="bar ${sts==="ok"?"ok":sts==="err"?"err":""}"><i style="width:${sts==="skip"?0:f*100}%"></i></div><span>${sts==="skip"?"—":pct(f)}</span></div></td>
+      <td><span class="badge ${bc}">${bl}</span></td><td class="hide-m" style="color:var(--dim)">${t}</td><td class="hide-m det trunc" style="${sts==="err"?"color:var(--err-fg)":""}" title="${esc(s.detail)}">${esc(s.detail||"")}</td></tr>`});
+  $("#steps").innerHTML=h;
+  const tot=Object.values(W).reduce((a,b)=>a+b),done=Object.entries(W).reduce((a,[k,w])=>a+w*((st[k]?.status==="ok"||st[k]?.status==="skip")?1:(st[k]?.frac||0)),0)/tot;
+  $("#allbar i").style.width=(done*100)+"%";$("#allbar").className="bar"+(done>=.999?" ok":"");
+  if(S.started){const el=(cur?now:(Math.max(...Object.values(st).map(s=>s.t1||0))||now))-S.started;
+    $("#total").textContent=`${Math.round(done*100)}%  ·  ${secs(el)} ${cur?"decorridos":"no total"}`+(cur&&done>.08&&done<.98?`  ·  ~${secs(el*(1-done)/done)} restantes`:"")}
+  else $("#total").textContent="";
+  if(S.info.delay!==undefined&&(cur||S.started)){$("#s-sync").textContent=(S.info.delay>=0?"+":"")+S.info.delay.toFixed(2).replace(".",",")+" s";
+    $("#s-sync2").textContent=String(S.info.speed_text||"").replace("dublagem ","").replace("original ","").replace(" fps →"," →")+" · "+(S.info.cuts?S.info.cuts+" corte"+(S.info.cuts>1?"s":""):"sem cortes")}
+  if(S.info.size){$("#s-out").textContent=size(S.info.size);$("#s-out2").textContent="MKV · dublagem em "+S.info.codec+(S.info.magnet?" · .torrent pronto":"")}
+  // fila
+  const avgL=[...S.queue.filter(j=>j.status==="ok"&&j.elapsed).map(j=>j.elapsed),...S.history.slice(0,20).filter(h=>h.status==="ok"&&h.elapsed).map(h=>h.elapsed)];
+  const avg=avgL.length?avgL.reduce((a,b)=>a+b)/avgL.length:null;
+  const nWait=S.queue.filter(j=>j.status==="wait").length;
+  const parts=[`${nWait} esperando`];if(cur)parts.push("1 processando");parts.push(S.queue.filter(j=>j.status==="ok").length+" pronto(s)");
+  if(avg&&(nWait||cur))parts.push("~"+secs(nWait*avg+(cur?avg*(1-(cur.frac||0)):0))+" restantes");if(S.paused&&nWait)parts.push("pausada");
+  $("#qsum").textContent=parts.join("  ·  ");
+  $("#b-qstart").style.display=cur&&!S.paused?"none":"";$("#b-qpause").style.display=cur&&!S.paused?"":"none";
+  $("#b-qstart").disabled=!nWait;$("#b-qstart").textContent=S.queue.some(j=>j.status!=="wait")&&nWait?"▶ Continuar fila":"▶ Iniciar fila";
+  let pos=0;$("#queue").innerHTML=S.queue.map((j,i)=>{if(j.status==="wait")pos++;const [l,cl]=LBL[j.status]||LBL.err;const f=j.status==="ok"?1:(j.frac||0);
+    const t=j.status==="run"?secs(now-(j.started||now)):["ok","err","cancel"].includes(j.status)?secs(j.elapsed):(avg?"~"+secs(avg):"—");
+    return `<tr class="click ${j.id===qsel?"sel":j.status==="run"?"cur":""}" data-id="${j.id}"><td style="color:var(--dim2)">${String(i+1).padStart(2,"0")}</td>
+      <td style="max-width:420px"><div class="nm trunc">${esc(base(j.out))}</div><div class="sm trunc">dublagem: ${esc(base(j.dub))} · adicionado ${esc(j.added)}</div></td>
+      <td><span class="badge ${cl}">${j.status==="run"?SPIN[spin]+" ":""}${l}</span></td>
+      <td><div class="pbar"><div class="bar ${j.status==="ok"?"ok":j.status==="err"?"err":""}"><i style="width:${f*100}%"></i></div><span>${Math.round(f*100)}%</span></div></td>
+      <td class="hide-m det trunc" style="${j.status==="err"?"color:var(--err-fg)":""}" title="${esc(j.error||j.detail)}">${esc(j.detail||(j.status==="wait"?pos+"º na espera":""))}</td><td class="hide-m" style="color:var(--dim)">${t}</td></tr>`}).join("");
+  $("#qempty").style.display=S.queue.length?"none":"";
+  $$("#queue tr").forEach(r=>{r.onclick=()=>{qsel=r.dataset.id===qsel?null:r.dataset.id;render()};
+    r.ondblclick=()=>{const j=S.queue.find(x=>x.id===r.dataset.id);if(j&&(j.error||j.detail))alert(j.error||j.detail)}});
+  // histórico
+  $("#hist").innerHTML=S.history.map(h=>{const [l,cl]=LBL[h.status]||LBL.err;
+    return `<tr><td style="max-width:380px"><div class="nm trunc" title="${esc(h.out)}">${esc(h.name)}</div><div class="sm trunc">dublagem de: ${esc(h.dub)}${h.qb?" · "+esc(h.qb):""}</div></td>
+      <td class="hide-m">${h.size?size(h.size):"—"}</td><td><span class="badge ${cl}">${l}</span></td><td class="hide-m det trunc">${esc(h.sync||h.detail||"")}</td>
+      <td class="hide-m" style="color:var(--dim)">${secs(h.elapsed)}</td><td style="color:var(--dim);white-space:nowrap">${esc(h.when)}</td>
+      <td>${h.torrent?`<a class="link" href="/api/torrent?path=${encodeURIComponent(h.torrent)}">.torrent</a>`:""}</td></tr>`}).join("");
+  $("#hempty").style.display=S.history.length?"none":"";
+  // compartilhar
+  const t=lastTor();$("#sh-name").textContent=t?base(t.torrent):"Nenhum ainda — ligue “Gerar .torrent” nas Configurações.";
+  $("#sh-mag").disabled=!t;$("#sh-dl").style.pointerEvents=t?"":"none";$("#sh-dl").style.opacity=t?1:.4;if(t)$("#sh-dl").href="/api/torrent?path="+encodeURIComponent(t.torrent);
+  // configurações
+  $$("[data-t]").forEach(e=>e.classList.toggle("on",!!c[e.dataset.t]));
+  $("#c-folder").textContent=c.folder||"mesma pasta do original";
+  if(!cfgFilled)fillCfg();
+}
+async function refresh(){try{const s=await api("/api/state");s._skew=s.now-Date.now()/1000;S=s;render()}catch(e){$("#sb").textContent="Sem conexão com o servidor — tentando de novo…";$("#sb-dot").style.background="var(--err)"}}
+drawZones();show("novo");refresh();setInterval(refresh,1000);
+</script>
+</body>
+</html>
