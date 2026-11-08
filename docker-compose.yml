@@ -5,20 +5,14 @@ services:
     container_name: dublasync
     restart: unless-stopped
     ports:
-      - target: 8282
-        published: "8282"
-        protocol: tcp
+      - "8282:8282"
     environment:
       TZ: America/Sao_Paulo
       DUBLASYNC_HOME: /DATA/AppData/dublasync
-      DUBLASYNC_ROOTS: /media:/DATA
+      DUBLASYNC_ROOTS: /media
     volumes:
-      - type: bind
-        source: /DATA
-        target: /DATA
-      - type: bind
-        source: /media
-        target: /media
+      - /DATA/AppData/dublasync:/DATA/AppData/dublasync
+      - /media:/media
     entrypoint: ["/bin/sh", "-c"]
     command: ["mkdir -p /DATA/AppData/dublasync && (command -v ffmpeg >/dev/null && command -v git >/dev/null || (echo 'Instalando FFmpeg e Git (so na primeira vez, demora uns minutos)...' && apt-get update && apt-get install -y --no-install-recommends ffmpeg git ca-certificates)) && (if [ -d /DATA/AppData/dublasync/app/.git ]; then echo 'Procurando atualizacao no GitHub...' && (git -C /DATA/AppData/dublasync/app fetch --depth 1 origin main && git -C /DATA/AppData/dublasync/app reset --hard origin/main || echo 'Sem internet: usando a versao ja instalada'); else git clone --depth 1 https://github.com/mxmarcos29-lgtm/DublaSync.git /DATA/AppData/dublasync/app; fi) && (python3 -c 'import numpy' 2>/dev/null || pip install --no-cache-dir numpy) && exec python3 -u /DATA/AppData/dublasync/app/server.py"]
 x-casaos:

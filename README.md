@@ -44,7 +44,7 @@ Vai aparecer um formulário já preenchido. Confira só três coisas, **sem muda
 
 - **Docker Image**: `python:3.12-slim`
 - **Port / Web UI**: `8282`
-- **Volumes**: duas linhas, `/DATA` → `/DATA` e `/media` → `/media` (é assim que o DublaSync enxerga os seus discos)
+- **Volumes**: duas linhas, `/DATA/AppData/dublasync` → `/DATA/AppData/dublasync` (onde o programa fica) e `/media` → `/media` (é assim que o DublaSync enxerga os seus discos)
 
 Clique em **Install**.
 
@@ -66,7 +66,6 @@ http://192.168.0.14:8282
 
 1. Em **Novo trabalho**, clique na área **Arquivo dublado**. Abre um navegador das pastas do servidor:
    - **/media** = discos e HDs (o seu de 8 TB deve estar aqui dentro, ex.: `/media/HD 8TB`)
-   - **/DATA** = armazenamento interno do ZimaOS
 2. Entre nas pastas e clique no arquivo dublado. Faça o mesmo em **Original em alta qualidade**.
 3. Confira o nome sugerido e clique **Gerar agora** (ou **Adicionar à fila** para juntar vários).
 4. Pode fechar a página: o servidor continua trabalhando. Abra de novo quando quiser para ver o andamento.
@@ -111,7 +110,10 @@ Suas configurações, fila e histórico ficam em `/DATA/AppData/dublasync/dados`
 - A porta 8282 pode estar ocupada por outro app: ⋮ → **Settings** → troque o primeiro número da porta (ex.: `8283`) → **Save**, e abra `http://IP:8283`.
 
 **Não acho meu HD na lista**
-- Procure dentro de `/media` e de `/DATA`. Discos externos e extras ficam em `/media`.
+- Os discos ficam dentro de `/media`. Se o seu estiver em outro lugar (ex.: em `/DATA/...`), no ZimaOS: ⋮ no ícone do DublaSync → **Settings** → em **Volumes**, clique **+ Add** e coloque o caminho do disco nas duas colunas (igual nos dois lados) → **Save**. Depois me avise o caminho que eu incluo no navegador de pastas.
+
+**Erro ao importar: "invalid mount config … Source must not be empty"**
+- Era um problema da primeira versão do arquivo de instalação, já corrigido. Copie de novo o `docker-compose.yml` daqui do GitHub e importe outra vez.
 
 **Ficou "Erro" na fila**
 - Dê dois cliques no filme para ver a mensagem. Botão **Tentar de novo** coloca na fila outra vez.
